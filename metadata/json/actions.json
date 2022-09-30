@@ -1,0 +1,12 @@
+{
+    "actions": [
+        {
+            "action": "ps",
+            "args": [
+                "ip",
+                "port-range"
+            ],
+            "description": "Scan the given IP address/website for any open ports."
+        }
+    ]
+}
