@@ -16,11 +16,13 @@ json -> Read and access JSON files
 time -> Time access and conversions
 functions -> Local functions file
 socket -> For port scanning
+os -> Operating System's Functionality
 """
 from termcolor import colored
 import json
 import functions
 import socket
+import os
 
 class Action:
     """
@@ -81,6 +83,18 @@ class Action:
         """
         return self.__open_ports
 
+    def log(file_name: str, data: str) -> None:
+        """
+        The log() function is used to log data to a file.
+        :param file_name: Name of the file
+        :param data: Data to be logged
+        :return None
+        """
+        if not os.path.isdir("../logs"):
+            os.mkdir("../logs")
+        with open("../logs/" + file_name + ".log", "w") as f:
+            f.write(data)
+
     def scan_ports(self, ip: str, port_range: str, logging) -> int:
         """
         The scan_ports() function is used to scan a range of ports on a given IP address.
@@ -105,9 +119,7 @@ class Action:
                 return_value = 1
         print(colored("INFO: Finished scanning ports on " + ip + ".", "blue"))
         if logging:
-            with open("../logs/result.log", "w") as f:
-                f.write("Open ports: \n" + str(self.__open_ports) + "\n\n")
-                f.write("Closed ports: " + str(self.__closed_ports))
+            self.log("Open ports: \n" + str(self.__open_ports) + "\n\n\n\n" + "Closed ports: " + str(self.__closed_ports))
         return return_value
 
     def perform(self) -> int:
