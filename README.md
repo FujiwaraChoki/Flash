@@ -8,7 +8,7 @@ Flash is a Command-Line Hacking Tool written in Python Version 3. It includes <b
 ## Port Scanning
 For Port Scanning, run the following command from the terminal:
 ```python3 src/main.py ps <IP> <PORT RANGE>```
-### Description
+### How to port scan
 Flash will start scanning all the ports in the given port range.
 A port range is defined with a "-" in the middle.
 Let's say you want to scan every port from 0-100 at localhost, this is how you would do it:
