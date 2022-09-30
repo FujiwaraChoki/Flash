@@ -15,6 +15,15 @@
                 "wordlist-path"
             ],
             "description": "Scan the given IP address/website for any directories using the given wordlist."
+        },
+        {
+            "action": "cp",
+            "args": [
+                "ip",
+                "port",
+                "target_os"
+            ],
+            "description": "Create a Payload with batch or bash for a Reverse Shell"
         }
     ]
 }
