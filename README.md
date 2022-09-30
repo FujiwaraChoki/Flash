@@ -18,6 +18,3 @@ For scanning directories of an IP/Website, run the following command from the te
 ```python3 src/main.py ps <IP> <WORDLIST PATH>```
 Flash will now enumerate the given IP/Website for the directories in the wordlist.
 <b>It is important that the words in the wordlist file are seperated by a new line character (or just press "Enter" on your Keyboard!).</b>
-
-## Demo
-![Alt Text](repo/demo.gif)

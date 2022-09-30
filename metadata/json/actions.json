@@ -7,6 +7,14 @@
                 "port-range"
             ],
             "description": "Scan the given IP address/website for any open ports."
+        },
+        {
+            "action": "ds",
+            "args": [
+                "ip",
+                "wordlist-path"
+            ],
+            "description": "Scan the given IP address/website for any directories using the given wordlist."
         }
     ]
 }

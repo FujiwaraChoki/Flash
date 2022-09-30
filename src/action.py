@@ -17,12 +17,14 @@ time -> Time access and conversions
 functions -> Local functions file
 socket -> For port scanning
 os -> Operating System's Functionality
+requests -> Make HTTP requests
 """
 from termcolor import colored
 import json
 import functions
 import socket
 import os
+import requests
 
 class Action:
     """
@@ -31,6 +33,8 @@ class Action:
     def __init__(self, action: str, args: list) -> None:
         self.__open_ports = []
         self.__closed_ports = []
+        self.__existing_directories = []
+        self.__non_existing_directories = []
         self.__available_actionsStr = json.load(open("../metadata/json/actions.json", "r"))["actions"]
         self.__available_actions = []
         for i in self.__available_actionsStr:
@@ -83,7 +87,21 @@ class Action:
         """
         return self.__open_ports
 
-    def log(file_name: str, data: str) -> None:
+    @property
+    def existing_directories(self) -> list:
+        """
+        Returns the existing directories.
+        """
+        return self.__existing_directories
+
+    @property
+    def non_existing_directories(self) -> list:
+        """
+        Returns the non-existing directories.
+        """
+        return self.__non_existing_directories
+
+    def log(self, file_name: str, data: str) -> None:
         """
         The log() function is used to log data to a file.
         :param file_name: Name of the file
@@ -119,7 +137,46 @@ class Action:
                 return_value = 1
         print(colored("INFO: Finished scanning ports on " + ip + ".", "blue"))
         if logging:
-            self.log("Open ports: \n" + str(self.__open_ports) + "\n\n\n\n" + "Closed ports: " + str(self.__closed_ports))
+            file_name = "result_ps_" + ip + "_" + port_range
+            content = str("Open ports: \n" + str(self.__open_ports) + "\n\n\n\n" + "Closed ports: \n" + str(self.__closed_ports))
+            self.log(file_name, data=content)
+        return return_value
+
+    def scan_directories(self, ip: str, wordlist: str, logging) -> int:
+        """
+        The scan_directories() function is used to scan a range of ports on a given IP address.
+        :param ip: IP address
+        :param port: Port
+        :return int
+        """
+        return_value = 0
+        # Check if provided wordlist is a valid file
+        if not os.path.isfile(wordlist):
+            functions.quit("FAILURE: Invalid wordlist.")
+        print(colored("INFO: Scanning directories on " + ip + " ...", "blue"))
+        with open(wordlist, "r") as f:
+            lines = f.readlines()
+            for dir in lines:
+                dir = dir.strip()
+                try:
+                    r = requests.get("http://" + ip + "/" + dir)
+                    if r.status_code == 200:
+                        print(colored("SUCCESS: Directory " + dir + " exists.", "green"))
+                        self.__existing_directories.append(dir)
+                    else:
+                        print(colored("FAILURE: Directory " + dir + " does not exist.", "red"))
+                        self.__non_existing_directories.append(dir)
+                        return_value = 1
+                except:
+                    print(colored("FAILURE: Directory " + dir + " does not exist.", "red"))
+                    self.__non_existing_directories.append(dir)
+                    return_value = 1    
+        
+        print(colored("INFO: Finished scanning directories on " + ip + ".", "blue"))
+        if logging:
+            file_name = "result_sd_" + ip + "_" + wordlist
+            content = str("Existing directories: \n" + str(self.__existing_directories) + "\n\n\n\n" + "Non-existing directories: \n" + str(self.__non_existing_directories))
+            self.log(file_name, content)
         return return_value
 
     def perform(self) -> int:
@@ -129,7 +186,12 @@ class Action:
         """
         print(colored("INFO: Performing action ...", "blue"))
         status = 0
+        is_log = bool(input("Do you want to log the output? (true/false): "))
         if self.__action == "ps":
-            is_log = bool(input("Do you want to log the output? (true/false): "))
+            # Instructions for when the user wants to scan ports
             status = self.scan_ports(ip=self.args[0], port_range=self.args[1], logging=is_log)
+        elif self.__action == "ds":
+            # Instructions for when the user wants to scan directories
+            status = self.scan_directories(ip=self.args[0], wordlist=self.args[1], logging=is_log)
+
         return status
