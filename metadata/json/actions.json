@@ -24,6 +24,14 @@
                 "target_os"
             ],
             "description": "Create a Payload with batch or bash for a Reverse Shell"
+        },
+        {
+            "action": "sl",
+            "args": [
+                "ip",
+                "port"
+            ],
+            "description": "Listen for incoming connections on the given IP address and port."
         }
     ]
 }

